@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="inputoutput">
+      <img id="imageSrc" alt="No Image" />
+      <div class="caption">
+        imageSrc <input type="file" id="fileInput" name="file" />
+      </div>
+    </div>
+    <div class="inputoutput">
+      <canvas id="canvasOutput"></canvas>
+      <div class="caption">canvasOutput</div>
+    </div>
+    <button onclick="handleClickHey()">Hey!</button>
+    <h3>Counter: <span id="counter"></span></h3>
+    <script src="libs/opencv_from_official.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
