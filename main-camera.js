@@ -10,8 +10,6 @@ const height = video.height;
 
 let counter = 0;
 
-// let cv2 = null;
-
 // cv["onRuntimeInitialized"] = () => {
 //   main();
 // };
@@ -30,9 +28,6 @@ const main = () => {
   let canvasFrame = document.getElementById("canvasFrame");
   let context = canvasFrame.getContext("2d");
 
-  // let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
-  // let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
-
   const FPS = 30;
 
   function processVideo() {
@@ -42,17 +37,8 @@ const main = () => {
       const srcData = context.getImageData(0, 0, width, height).data;
 
       context.drawImage(video, 0, 0, width, height);
-      // src.data.set(srcData);
 
       videoWorker.postMessage({ srcData, width, height });
-
-      // cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-
-      // if (counter < 100) {
-      //   console.log({ src, dst });
-      // }
-
-      // cv.imshow("canvasOutput", dst);
 
       // schedule the next one.
       let delay = 1000 / FPS - (Date.now() - begin);
@@ -70,16 +56,15 @@ const main = () => {
 };
 
 videoWorker.onmessage = e => {
-  const { moduleLoadFlag, isCVLoaded, face } = e.data;
+  const { moduleLoadFlag, isCVLoaded, features } = e.data;
 
   if (moduleLoadFlag && isCVLoaded) {
     main();
     isCanvasReady = true;
   } else {
-    console.log("Result from worker:", face);
-    // console.log("cv in main thread:", cv);
-    // if (cv2) {
-    //   cv2.imshow("canvasOutput", dst);
-    // }
+    console.log("Result from worker:", {
+      left: features.left,
+      right: features.right
+    });
   }
 };
