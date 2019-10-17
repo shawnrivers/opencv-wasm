@@ -132,7 +132,7 @@ onmessage = e => {
       let roiGray = gray.roi(faceRect);
 
       eyeCascade.detectMultiScale(roiGray, eyes);
-      console.log("eyes.size():", eyes.size());
+      // console.log("eyes.size():", eyes.size());
 
       for (let j = 0; j < eyes.size(); j++) {
         const eyeRect = eyes.get(j);

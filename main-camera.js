@@ -62,9 +62,17 @@ videoWorker.onmessage = e => {
     main();
     isCanvasReady = true;
   } else {
-    console.log("Result from worker:", {
-      left: features.left,
-      right: features.right
-    });
+    document.getElementById("leftEyeX").textContent = features.left
+      ? features.left.x
+      : "";
+    document.getElementById("leftEyeY").textContent = features.left
+      ? features.left.y
+      : "";
+    document.getElementById("rightEyeX").textContent = features.right
+      ? features.right.x
+      : "";
+    document.getElementById("rightEyeY").textContent = features.right
+      ? features.right.y
+      : "";
   }
 };
