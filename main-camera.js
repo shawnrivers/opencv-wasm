@@ -1,17 +1,20 @@
 let video = document.getElementById("videoInput");
 
+const videoWorker = new Worker("workers/video-worker.js");
+
 let streaming = false;
+let isCanvasReady = false;
 
 const width = video.width;
 const height = video.height;
 
 let counter = 0;
 
-cv["onRuntimeInitialized"] = () => {
-  console.log({ cv });
+// let cv2 = null;
 
-  main();
-};
+// cv["onRuntimeInitialized"] = () => {
+//   main();
+// };
 
 const main = () => {
   navigator.mediaDevices
@@ -27,8 +30,8 @@ const main = () => {
   let canvasFrame = document.getElementById("canvasFrame");
   let context = canvasFrame.getContext("2d");
 
-  let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
-  let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
+  // let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+  // let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
 
   const FPS = 30;
 
@@ -36,17 +39,21 @@ const main = () => {
     try {
       let begin = Date.now();
 
+      const srcData = context.getImageData(0, 0, width, height).data;
+
       context.drawImage(video, 0, 0, width, height);
-      src.data.set(context.getImageData(0, 0, width, height).data);
+      // src.data.set(srcData);
 
-      cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-      // console.log("cvtColor:", cv.cvtColor);
+      videoWorker.postMessage({ srcData, width, height });
 
-      if (counter < 100) {
-        console.log({ src, dst });
-      }
+      // cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
 
-      cv.imshow("canvasOutput", dst);
+      // if (counter < 100) {
+      //   console.log({ src, dst });
+      // }
+
+      // cv.imshow("canvasOutput", dst);
+
       // schedule the next one.
       let delay = 1000 / FPS - (Date.now() - begin);
 
@@ -60,4 +67,19 @@ const main = () => {
 
   // schedule the first one.
   setTimeout(processVideo, 0);
+};
+
+videoWorker.onmessage = e => {
+  const { moduleLoadFlag, isCVLoaded, dst } = e.data;
+
+  if (moduleLoadFlag && isCVLoaded) {
+    main();
+    isCanvasReady = true;
+  } else {
+    // console.log("Result from worker:", dst);
+    // console.log("cv in main thread:", cv);
+    // if (cv2) {
+    //   cv2.imshow("canvasOutput", dst);
+    // }
+  }
 };
