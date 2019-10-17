@@ -70,13 +70,13 @@ const main = () => {
 };
 
 videoWorker.onmessage = e => {
-  const { moduleLoadFlag, isCVLoaded, dst } = e.data;
+  const { moduleLoadFlag, isCVLoaded, face } = e.data;
 
   if (moduleLoadFlag && isCVLoaded) {
     main();
     isCanvasReady = true;
   } else {
-    // console.log("Result from worker:", dst);
+    console.log("Result from worker:", face);
     // console.log("cv in main thread:", cv);
     // if (cv2) {
     //   cv2.imshow("canvasOutput", dst);
