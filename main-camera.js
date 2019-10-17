@@ -1,49 +1,59 @@
-let video = document.getElementById("video");
-let canvas = document.getElementById("canvas");
-let canvasContext = canvas.getContext("2d");
-let isStreaming = false;
+let video = document.getElementById("videoInput");
 
-navigator.mediaDevices
-  .getUserMedia({ video: { width: 320, height: 240 }, audio: false })
-  .then(stream => {
-    video.srcObject = stream;
-    video.onloadedmetadata = e => {
+let streaming = false;
+
+const width = video.width;
+const height = video.height;
+
+let counter = 0;
+
+cv["onRuntimeInitialized"] = () => {
+  console.log({ cv });
+
+  main();
+};
+
+const main = () => {
+  navigator.mediaDevices
+    .getUserMedia({ video: true, audio: false })
+    .then(function(stream) {
+      video.srcObject = stream;
       video.play();
-    };
-  })
-  .catch(err => {
-    /* handle the error */
-    console.log({ error });
-  });
+    })
+    .catch(function(err) {
+      console.log("An error occurred! " + err);
+    });
 
-const processFrame = () => {
-  canvasContext.drawImage(video, 0, 0, videoWidth, videoHeight);
-  let imageData = canvasContext.getImageData(0, 0, videoWidth, videoHeight);
+  let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+  let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
+  let cap = new cv.VideoCapture(video);
 
-  console.log({ imageData });
-};
+  const FPS = 30;
 
-const startVideoProcessing = () => {
-  if (!isStreaming) {
-    console.warn("Please startup your webcam");
-    return;
+  function processVideo() {
+    try {
+      let begin = Date.now();
+      // start processing.
+      cap.read(src);
+      cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+      // console.log("cvtColor:", cv.cvtColor);
+
+      if (counter < 100) {
+        console.log({ src, dst });
+      }
+
+      cv.imshow("canvasOutput", dst);
+      // schedule the next one.
+      let delay = 1000 / FPS - (Date.now() - begin);
+
+      counter += 1;
+
+      setTimeout(processVideo, delay);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
-  canvasContext = canvas.getContext("2d");
-  requestAnimationFrame(processFrame);
+  // schedule the first one.
+  setTimeout(processVideo, 0);
 };
-
-const handleVideoPlay = ev => {
-  if (!isStreaming) {
-    videoWidth = video.videoWidth;
-    videoHeight = video.videoHeight;
-    video.setAttribute("width", videoWidth);
-    video.setAttribute("height", videoHeight);
-    canvas.width = videoWidth;
-    canvas.height = videoHeight;
-    isStreaming = true;
-  }
-  startVideoProcessing();
-};
-
-video.addEventListener("canplay", handleVideoPlay, false);
