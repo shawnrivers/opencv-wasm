@@ -24,17 +24,21 @@ const main = () => {
       console.log("An error occurred! " + err);
     });
 
+  let canvasFrame = document.getElementById("canvasFrame");
+  let context = canvasFrame.getContext("2d");
+
   let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
   let dst = new cv.Mat(video.height, video.width, cv.CV_8UC1);
-  let cap = new cv.VideoCapture(video);
 
   const FPS = 30;
 
   function processVideo() {
     try {
       let begin = Date.now();
-      // start processing.
-      cap.read(src);
+
+      context.drawImage(video, 0, 0, width, height);
+      src.data.set(context.getImageData(0, 0, width, height).data);
+
       cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
       // console.log("cvtColor:", cv.cvtColor);
 
