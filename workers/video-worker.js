@@ -2,7 +2,7 @@ window = self;
 
 let Module = {};
 
-Module["onRuntimeInitialized"] = function() {
+Module.onRuntimeInitialized = () => {
   postMessage({ moduleLoadFlag: true, isCVLoaded: true, features: null });
 };
 
@@ -46,7 +46,7 @@ console.log("[videoWorker] Module:", Module);
 const checkVariable = v => v !== undefined && v !== null;
 
 onmessage = e => {
-  const { srcData, width, height } = e.data;
+  const { srcData, width, height, begin } = e.data;
 
   if (!faceCascade) {
     faceCascade = new cv.CascadeClassifier();
@@ -165,7 +165,12 @@ onmessage = e => {
 
     // console.log({ rects });
 
-    postMessage({ moduleLoadFlag: false, isCVLoaded: true, features: rects });
+    postMessage({
+      moduleLoadFlag: false,
+      isCVLoaded: true,
+      features: rects,
+      begin
+    });
 
     // src.delete();
     // gray.delete();
