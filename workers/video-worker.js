@@ -7,7 +7,7 @@ let eyeCascade = null;
 
 const checkVariable = v => v !== undefined && v !== null;
 
-importScripts("../libs/opencv.js");
+importScripts("opencv.js");
 
 Module.onRuntimeInitialized = () => {
   if (!checkVariable(faceCascade)) {

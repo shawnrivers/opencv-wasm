@@ -7,19 +7,29 @@
     <title>Document</title>
   </head>
   <body>
-    <div class="inputoutput">
-      <img id="imageSrc" alt="No Image" />
-      <div class="caption">
-        imageSrc <input type="file" id="fileInput" name="file" />
-      </div>
-    </div>
-    <div class="inputoutput">
-      <canvas id="canvasOutput"></canvas>
-      <div class="caption">canvasOutput</div>
-    </div>
-    <button onclick="handleClickHey()">Hey!</button>
-    <h3>Counter: <span id="counter"></span></h3>
-    <script src="libs/opencv_from_official.js"></script>
+    <p>FPS: <code id="fps"></code></p>
+    <video
+      id="videoInput"
+      width="320"
+      height="240"
+      style="display: none;"
+    ></video>
+    <canvas id="canvasFrame" width="320" height="240"></canvas>
+    <ul>
+      <li>
+        Left Eye:
+        <code>
+          (<span id="leftEyeX"></span>, <span id="leftEyeY"></span>)
+        </code>
+      </li>
+      <li>
+        Right Eye:
+        <code>
+          (<span id="rightEyeX"></span>, <span id="rightEyeY"></span>)
+        </code>
+      </li>
+    </ul>
+    <script src="libs/wasm/opencv.js"></script>
     <script src="main.js"></script>
   </body>
 </html>
