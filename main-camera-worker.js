@@ -8,6 +8,9 @@ let isCanvasReady = false;
 const width = video.width;
 const height = video.height;
 
+let canvasFrame = document.getElementById("canvasFrame");
+let context = canvasFrame.getContext("2d");
+
 let counter = 0;
 
 let leftX = null;
@@ -15,9 +18,24 @@ let leftY = null;
 let rightX = null;
 let rightY = null;
 
-// cv["onRuntimeInitialized"] = () => {
-//   main();
-// };
+const processVideo = () => {
+  try {
+    const start = performance.now();
+
+    const srcData = context.getImageData(0, 0, width, height).data;
+
+    context.drawImage(video, 0, 0, width, height);
+
+    videoWorker.postMessage({ srcData, width, height, start });
+
+    document.getElementById("leftEyeX").textContent = leftX;
+    document.getElementById("leftEyeY").textContent = leftY;
+    document.getElementById("rightEyeX").textContent = rightX;
+    document.getElementById("rightEyeY").textContent = rightY;
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 const main = () => {
   navigator.mediaDevices
@@ -30,43 +48,11 @@ const main = () => {
       console.log("An error occurred! " + err);
     });
 
-  let canvasFrame = document.getElementById("canvasFrame");
-  let context = canvasFrame.getContext("2d");
-
-  const FPS = 30;
-
-  const processVideo = () => {
-    try {
-      const begin = Date.now();
-
-      const srcData = context.getImageData(0, 0, width, height).data;
-
-      context.drawImage(video, 0, 0, width, height);
-
-      videoWorker.postMessage({ srcData, width, height, begin });
-
-      // schedule the next one.
-      let delay = 1000 / FPS - (Date.now() - begin);
-
-      document.getElementById("leftEyeX").textContent = leftX;
-      document.getElementById("leftEyeY").textContent = leftY;
-      document.getElementById("rightEyeX").textContent = rightX;
-      document.getElementById("rightEyeY").textContent = rightY;
-
-      // setTimeout(processVideo, delay);
-      requestAnimationFrame(processVideo);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // schedule the first one.
-  // setTimeout(processVideo, 0);
-  requestAnimationFrame(processVideo);
+  processVideo();
 };
 
 videoWorker.onmessage = e => {
-  const { moduleLoadFlag, isCVLoaded, features, begin } = e.data;
+  const { moduleLoadFlag, isCVLoaded, features, start } = e.data;
 
   if (moduleLoadFlag && isCVLoaded) {
     main();
@@ -77,11 +63,11 @@ videoWorker.onmessage = e => {
     rightX = features.right ? features.right.x : null;
     rightY = features.right ? features.right.y : null;
 
-    const end = Date.now();
+    const end = performance.now();
 
     document.getElementById("fps").textContent =
-      Math.round((1000 / (end - begin)) * 10) / 10;
+      Math.round((1000 / (end - start)) * 10) / 10;
 
-    // console.log({ timeList });
+    requestAnimationFrame(processVideo);
   }
 };

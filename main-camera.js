@@ -22,9 +22,25 @@ let leftY = null;
 let rightX = null;
 let rightY = null;
 
+const checkVariable = v => v !== undefined && v !== null;
+
 Module.onRuntimeInitialized = () => {
   console.log("[videoWorker] cv:", cv);
   console.log("[videoWorker] Module:", Module);
+
+  if (!checkVariable(faceCascade)) {
+    faceCascade = new cv.CascadeClassifier();
+    const faceCascadeLoaded = faceCascade.load("face.xml");
+
+    console.log({ faceCascadeLoaded });
+  }
+
+  if (!checkVariable(eyeCascade)) {
+    eyeCascade = new cv.CascadeClassifier();
+    const eyeCascadeLoaded = eyeCascade.load("eye.xml");
+
+    console.log({ eyeCascadeLoaded });
+  }
 
   main();
 };
@@ -48,60 +64,11 @@ Module.preRun = [
   }
 ];
 
-const checkVariable = v => v !== undefined && v !== null;
-
-const processFrame = (srcData, width, height, begin) => {
-  if (!faceCascade) {
-    faceCascade = new cv.CascadeClassifier();
-    const faceCascadeLoaded = faceCascade.load("face.xml");
-
-    console.log({ faceCascadeLoaded });
-  }
-
-  if (!eyeCascade) {
-    eyeCascade = new cv.CascadeClassifier();
-    const eyeCascadeLoaded = eyeCascade.load("eye.xml");
-
-    console.log({ eyeCascadeLoaded });
-  }
-
-  if (!src || previousWidth !== width || previousHeight !== height) {
-    if (checkVariable(src)) {
-      src.delete();
-    }
-
-    src = new cv.Mat(height, width, cv.CV_8UC4);
-    previousWidth = width;
-    previousHeight = height;
-
-    console.log({ previousWidth, previousHeight, width, height });
-  }
-
-  if (!gray || previousWidth !== width || previousHeight !== height) {
-    if (checkVariable(gray)) {
-      gray.delete();
-    }
-
-    gray = new cv.Mat(height, width, cv.CV_8UC1);
-    previousWidth = width;
-    previousHeight = height;
-
-    console.log({ previousWidth, previousHeight, width, height });
-  }
-
-  if (!faces) {
-    if (checkVariable(faces)) {
-      faces.delete();
-    }
-    faces = new cv.RectVector();
-  }
-
-  if (!eyes) {
-    if (checkVariable(eyes)) {
-      eyes.delete();
-    }
-    eyes = new cv.RectVector();
-  }
+const processFrame = (srcData, width, height) => {
+  src = new cv.Mat(height, width, cv.CV_8UC4);
+  gray = new cv.Mat(height, width, cv.CV_8UC1);
+  faces = new cv.RectVector();
+  eyes = new cv.RectVector();
 
   const initialized =
     checkVariable(faceCascade) &&
@@ -123,19 +90,16 @@ const processFrame = (srcData, width, height, begin) => {
       right: null
     };
 
-    for (let i = 0; i < faces.size(); ++i) {
+    for (let i = 0; i < faces.size(); i++) {
       const faceRect = faces.get(i);
       const faceX = faceRect.x;
       const faceY = faceRect.y;
       const faceWidth = faceRect.width;
       const faceHeight = faceRect.height;
 
-      // console.log({ faceRect });
-
       let roiGray = gray.roi(faceRect);
 
       eyeCascade.detectMultiScale(roiGray, eyes);
-      // console.log("eyes.size():", eyes.size());
 
       for (let j = 0; j < eyes.size(); j++) {
         const eyeRect = eyes.get(j);
@@ -143,8 +107,6 @@ const processFrame = (srcData, width, height, begin) => {
         const eyeY = eyeRect.y;
         const eyeWidth = eyeRect.width;
         const eyeHeight = eyeRect.height;
-
-        // console.log({ eyeRect });
 
         if (eyeY + eyeHeight / 2 < faceHeight / 2) {
           if (eyeX + eyeWidth / 2 < faceWidth / 2) {
@@ -166,6 +128,11 @@ const processFrame = (srcData, width, height, begin) => {
       }
     }
 
+    src.delete();
+    gray.delete();
+    faces.delete();
+    eyes.delete();
+
     return rects;
   }
 };
@@ -186,23 +153,23 @@ const main = () => {
 
   const processVideo = () => {
     try {
-      const begin = Date.now();
+      const start = performance.now();
 
       const srcData = context.getImageData(0, 0, width, height).data;
 
       context.drawImage(video, 0, 0, width, height);
 
-      const features = processFrame(srcData, width, height, begin);
+      const features = processFrame(srcData, width, height);
 
       const leftX = features.left ? features.left.x : null;
       const leftY = features.left ? features.left.y : null;
       const rightX = features.right ? features.right.x : null;
       const rightY = features.right ? features.right.y : null;
 
-      const end = Date.now();
+      const end = performance.now();
 
       document.getElementById("fps").textContent =
-        Math.round((1000 / (end - begin)) * 10) / 10;
+        Math.round((1000 / (end - start)) * 10) / 10;
 
       document.getElementById("leftEyeX").textContent = leftX;
       document.getElementById("leftEyeY").textContent = leftY;
