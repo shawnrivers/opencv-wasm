@@ -170,6 +170,7 @@ const main = () => {
 
       document.getElementById("fps").textContent =
         Math.round((1000 / (end - start)) * 10) / 10;
+      document.getElementById("ms").textContent = end - start;
 
       document.getElementById("leftEyeX").textContent = leftX;
       document.getElementById("leftEyeY").textContent = leftY;

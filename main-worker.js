@@ -71,6 +71,7 @@ videoWorker.onmessage = e => {
 
     document.getElementById("fps").textContent =
       Math.round((1000 / (end - start)) * 10) / 10;
+    document.getElementById("ms").textContent = end - start;
 
     requestAnimationFrame(processVideo);
   }
