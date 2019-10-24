@@ -12,6 +12,8 @@ const canvasHeight = canvasFrame.height;
 
 let counter = 0;
 
+let faceX = null;
+let faceY = null;
 let leftX = null;
 let leftY = null;
 let rightX = null;
@@ -31,11 +33,6 @@ const processVideo = () => {
       height: canvasHeight,
       start
     });
-
-    document.getElementById("leftEyeX").textContent = leftX;
-    document.getElementById("leftEyeY").textContent = leftY;
-    document.getElementById("rightEyeX").textContent = rightX;
-    document.getElementById("rightEyeY").textContent = rightY;
   } catch (err) {
     console.log(err);
   }
@@ -56,18 +53,27 @@ const main = () => {
 };
 
 videoWorker.onmessage = e => {
-  const { moduleLoadFlag, isCVLoaded, features, start } = e.data;
+  const { moduleLoadFlag, isCVLoaded, faceFeature, features, start } = e.data;
 
   if (moduleLoadFlag && isCVLoaded) {
     main();
     isCanvasReady = true;
   } else {
+    faceX = faceFeature ? faceFeature.x : null;
+    faceY = faceFeature ? faceFeature.y : null;
     leftX = features.left ? features.left.x : null;
     leftY = features.left ? features.left.y : null;
     rightX = features.right ? features.right.x : null;
     rightY = features.right ? features.right.y : null;
 
     const end = performance.now();
+
+    document.getElementById("faceX").textContent = faceX;
+    document.getElementById("faceY").textContent = faceY;
+    document.getElementById("leftEyeX").textContent = leftX;
+    document.getElementById("leftEyeY").textContent = leftY;
+    document.getElementById("rightEyeX").textContent = rightX;
+    document.getElementById("rightEyeY").textContent = rightY;
 
     document.getElementById("fps").textContent =
       Math.round((1000 / (end - start)) * 10) / 10;

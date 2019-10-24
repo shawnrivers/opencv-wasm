@@ -24,7 +24,13 @@ Module.onRuntimeInitialized = () => {
     console.log({ eyeCascadeLoaded });
   }
 
-  postMessage({ moduleLoadFlag: true, isCVLoaded: true, features: null });
+  postMessage({
+    moduleLoadFlag: true,
+    isCVLoaded: true,
+    faceFeature: null,
+    features: null,
+    start: null
+  });
 };
 
 Module.preRun = [
@@ -79,6 +85,8 @@ onmessage = e => {
 
     faceCascade.detectMultiScale(gray, faces, 1.1, 3, 0);
 
+    let faceFeature = null;
+
     let rects = {
       left: null,
       right: null
@@ -90,6 +98,13 @@ onmessage = e => {
       const faceY = faceRect.y;
       const faceWidth = faceRect.width;
       const faceHeight = faceRect.height;
+
+      faceFeature = {
+        x: faceX,
+        y: faceY,
+        width: faceWidth,
+        height: faceHeight
+      };
 
       let roiGray = gray.roi(faceRect);
 
@@ -125,6 +140,7 @@ onmessage = e => {
     postMessage({
       moduleLoadFlag: false,
       isCVLoaded: true,
+      faceFeature,
       features: rects,
       start
     });
