@@ -1,6 +1,9 @@
 let video = document.getElementById("videoInput");
 let canvasFrame = document.getElementById("canvasFrame");
 let context = canvasFrame.getContext("2d");
+let indicatorContext = document
+  .getElementById("indicatorCanvas")
+  .getContext("2d");
 
 let videoWorker = new Worker("workers/video-worker.js");
 
@@ -11,13 +14,6 @@ const canvasWidth = canvasFrame.width;
 const canvasHeight = canvasFrame.height;
 
 let counter = 0;
-
-let faceX = null;
-let faceY = null;
-let leftX = null;
-let leftY = null;
-let rightX = null;
-let rightY = null;
 
 const processVideo = () => {
   try {
@@ -36,6 +32,18 @@ const processVideo = () => {
   } catch (err) {
     console.log(err);
   }
+};
+
+const drawFace = (context, x, y, width, height) => {
+  context.strokeStyle = "#000000";
+  context.lineWidth = 2;
+  context.strokeRect(x, y, width, height);
+};
+
+const drawEye = (context, x, y, width, height) => {
+  context.strokeStyle = "#FF0000";
+  context.lineWidth = 2;
+  context.strokeRect(x, y, width, height);
 };
 
 const main = () => {
@@ -59,21 +67,57 @@ videoWorker.onmessage = e => {
     main();
     isCanvasReady = true;
   } else {
-    faceX = faceFeature ? faceFeature.x : null;
-    faceY = faceFeature ? faceFeature.y : null;
-    leftX = features.left ? features.left.x : null;
-    leftY = features.left ? features.left.y : null;
-    rightX = features.right ? features.right.x : null;
-    rightY = features.right ? features.right.y : null;
-
     const end = performance.now();
 
-    document.getElementById("faceX").textContent = faceX;
-    document.getElementById("faceY").textContent = faceY;
-    document.getElementById("leftEyeX").textContent = leftX;
-    document.getElementById("leftEyeY").textContent = leftY;
-    document.getElementById("rightEyeX").textContent = rightX;
-    document.getElementById("rightEyeY").textContent = rightY;
+    indicatorContext.drawImage(video, 0, 0, canvasWidth, canvasHeight);
+
+    if (faceFeature) {
+      const faceX = faceFeature.x;
+      const faceY = faceFeature.y;
+
+      drawFace(
+        indicatorContext,
+        faceX,
+        faceY,
+        faceFeature.width,
+        faceFeature.height
+      );
+
+      document.getElementById("faceX").textContent = faceX;
+      document.getElementById("faceY").textContent = faceY;
+
+      if (features.left) {
+        const leftX = features.left.x;
+        const leftY = features.left.y;
+
+        drawEye(
+          indicatorContext,
+          leftX,
+          leftY,
+          features.left.width,
+          features.left.height
+        );
+
+        document.getElementById("leftEyeX").textContent = leftX;
+        document.getElementById("leftEyeY").textContent = leftY;
+      }
+
+      if (features.right) {
+        const rightX = features.right.x;
+        const rightY = features.right.y;
+
+        drawEye(
+          indicatorContext,
+          rightX,
+          rightY,
+          features.right.width,
+          features.right.height
+        );
+
+        document.getElementById("rightEyeX").textContent = rightX;
+        document.getElementById("rightEyeY").textContent = rightY;
+      }
+    }
 
     document.getElementById("fps").textContent =
       Math.round((1000 / (end - start)) * 10) / 10;
