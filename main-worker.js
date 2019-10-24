@@ -1,15 +1,14 @@
 let video = document.getElementById("videoInput");
+let canvasFrame = document.getElementById("canvasFrame");
+let context = canvasFrame.getContext("2d");
 
 let videoWorker = new Worker("workers/video-worker.js");
 
 let streaming = false;
 let isCanvasReady = false;
 
-const width = video.width;
-const height = video.height;
-
-let canvasFrame = document.getElementById("canvasFrame");
-let context = canvasFrame.getContext("2d");
+const canvasWidth = canvasFrame.width;
+const canvasHeight = canvasFrame.height;
 
 let counter = 0;
 
@@ -22,11 +21,16 @@ const processVideo = () => {
   try {
     const start = performance.now();
 
-    const srcData = context.getImageData(0, 0, width, height).data;
+    context.drawImage(video, 0, 0, canvasWidth, canvasHeight);
 
-    context.drawImage(video, 0, 0, width, height);
+    const srcData = context.getImageData(0, 0, canvasWidth, canvasHeight).data;
 
-    videoWorker.postMessage({ srcData, width, height, start });
+    videoWorker.postMessage({
+      srcData,
+      width: canvasWidth,
+      height: canvasHeight,
+      start
+    });
 
     document.getElementById("leftEyeX").textContent = leftX;
     document.getElementById("leftEyeY").textContent = leftY;
