@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Facial Landmark</title>
+  </head>
+  <body>
+    <p>FPS: <code id="fps"></code></p>
+    <p>Processing time: <code id="ms"></code> ms</p>
+    <video
+      id="videoInput"
+      width="320"
+      height="240"
+      style="display: none;"
+    ></video>
+    <canvas id="canvasFrame" width="320" height="240"></canvas>
+    <canvas id="indicatorCanvas" width="160" height="120"></canvas>
+    <ul>
+      <li>
+        Face:
+        <code> (<span id="faceX"></span>, <span id="faceY"></span>) </code>
+      </li>
+      <li>
+        Left Eye:
+        <code>
+          (<span id="leftEyeX"></span>, <span id="leftEyeY"></span>)
+        </code>
+      </li>
+      <li>
+        Right Eye:
+        <code>
+          (<span id="rightEyeX"></span>, <span id="rightEyeY"></span>)
+        </code>
+      </li>
+    </ul>
+    <script
+      type="text/javascript"
+      src="https://code.jquery.com/jquery-2.1.1.min.js"
+    ></script>
+    <script src="libs/face-api.js"></script>
+    <script src="landmark.js"></script>
+  </body>
+</html>
