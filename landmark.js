@@ -40,7 +40,55 @@ const main = async () => {
         .withFaceLandmarks();
 
       if (result) {
-        // console.log({ result });
+        const landmarks = result.landmarks._positions;
+
+        const leftEyeLandmarks = landmarks.slice(36, 42);
+        const rightEyeLandmarks = landmarks.slice(42, 48);
+
+        const leftXs = leftEyeLandmarks.map(point => point._x);
+        const leftYs = leftEyeLandmarks.map(point => point._y);
+        const rightXs = rightEyeLandmarks.map(point => point._x);
+        const rightYs = rightEyeLandmarks.map(point => point._y);
+
+        const leftEyeX = Math.min(...leftXs);
+        const leftEyeY = Math.min(...leftYs);
+        const leftEyeWidth = Math.max(...leftXs) - leftEyeX;
+        const leftEyeHeight = Math.max(...leftYs) - leftEyeY;
+        const leftImageData = canvasContext.getImageData(
+          leftEyeX,
+          leftEyeY,
+          leftEyeWidth,
+          leftEyeHeight
+        );
+
+        const rightEyeX = Math.min(...rightXs);
+        const rightEyeY = Math.min(...rightYs);
+        const rightEyeWidth = Math.max(...rightXs) - rightEyeX;
+        const rightEyeHeight = Math.max(...rightYs) - rightEyeY;
+        const rightImageData = canvasContext.getImageData(
+          rightEyeX,
+          rightEyeY,
+          rightEyeWidth,
+          rightEyeHeight
+        );
+
+        const leftEye = {
+          patch: leftImageData,
+          x: leftEyeX,
+          y: leftEyeY,
+          width: leftEyeWidth,
+          height: leftEyeHeight
+        };
+
+        const rightEye = {
+          patch: rightImageData,
+          x: rightEyeX,
+          y: rightEyeY,
+          width: rightEyeWidth,
+          height: rightEyeHeight
+        };
+
+        // console.log({ leftEye, rightEye });
 
         const indicatorCanvas = document.getElementById("indicatorCanvas");
         const indicatorContext = indicatorCanvas.getContext("2d");
@@ -65,25 +113,23 @@ const main = async () => {
 
         // faceapi.draw.drawDetections(indicatorCanvas, resizedResult);
         faceapi.draw.drawFaceLandmarks(indicatorCanvas, resizedResult);
+
+        const leftX = leftEye.x;
+        const leftY = leftEye.y;
+        const rightX = rightEye.x;
+        const rightY = rightEye.y;
+
+        document.getElementById("leftEyeX").textContent = leftX;
+        document.getElementById("leftEyeY").textContent = leftY;
+        document.getElementById("rightEyeX").textContent = rightX;
+        document.getElementById("rightEyeY").textContent = rightY;
       }
-
-      // const features = processFrame(srcData, width, height);
-
-      // const leftX = features.left ? features.left.x : null;
-      // const leftY = features.left ? features.left.y : null;
-      // const rightX = features.right ? features.right.x : null;
-      // const rightY = features.right ? features.right.y : null;
 
       const end = performance.now();
 
       document.getElementById("fps").textContent =
         Math.round((1000 / (end - start)) * 10) / 10;
-      document.getElementById("ms").textContent = end - start;
-
-      // document.getElementById("leftEyeX").textContent = leftX;
-      // document.getElementById("leftEyeY").textContent = leftY;
-      // document.getElementById("rightEyeX").textContent = rightX;
-      // document.getElementById("rightEyeY").textContent = rightY;
+      document.getElementById("ms").textContent = Math.round(end - start);
 
       requestAnimationFrame(processVideo);
     } catch (err) {
